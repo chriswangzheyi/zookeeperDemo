@@ -7,15 +7,18 @@ import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
-//没有设置ACL之前，可以直接连接zk。如果有ACL控制，见AuthConnectionZooKeeperDemo
-public class ConnectionZooKeeperDemo {
+//有ACL控制的连接Demo
+public class AuthConnectionZooKeeperDemo {
+	
+	
+	public static final String AUTH_INFO = "root:root" ;	// 进行连接的授权信息，授权账户：授权密码
+	
 	
 	public static void main(String[] args) throws Exception {
 		// 多个连接地址之间使用“,”分割，如果不写端口号就是2181
-		String connectionURL = "54.249.79.156:2181,54.249.79.156:2182,54.249.79.156:2183"; // 配置所有的连接地址
-		int sessionTimeout = 2000; // 两秒为超时时间,也就是说如果超过2秒还没有连接成功，则表示连接失败
-		
-		ZooKeeper zkClient = new ZooKeeper(connectionURL, sessionTimeout,
+		String connectString = "54.249.79.156:2181,54.249.79.156:2182,54.249.79.156:2183"; // 配置所有的连接地址
+		int sessionTimeout = 2000; // 两秒为超时时间，也就是说如果超过2秒还没有连接成功，则表示连接失败
+		ZooKeeper zkClient = new ZooKeeper(connectString, sessionTimeout,
 				new Watcher() { // 对监听进行处理控制
 					public void process(WatchedEvent event) {
 						System.out.println("*** 【监听事件处理】path = "
@@ -25,10 +28,11 @@ public class ConnectionZooKeeperDemo {
 				});
 		
 		
+		zkClient.addAuthInfo("digest", AUTH_INFO.getBytes()); // 进行认证授权
+		
+		
 		List<String> children = zkClient.getChildren("/", false); // 得到所有的根节点下的子节点
 		Iterator<String> iter = children.iterator();
-		
-		//打印所有节点
 		while (iter.hasNext()) {
 			System.out.println(iter.next());
 		}
